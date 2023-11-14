@@ -8,21 +8,41 @@
  * Return: The count of characters printed.
  */
 
-int _printf(const char *format, ...)
-{
-	buffer_t *output;
-	va_list args;
-	int ret;
+int _printf(const char *format, ...) {
+    va_list args;
+    int count = 0;
 
-	if (format == NULL)
-		return (-1);
-	output = init_buffer();
-	if (output == NULL)
-		return (-1);
+    va_start(args, format);
 
-	va_start(args, format);
+    while (*format != '\0') {
+        if (*format == '%' && *(format + 1) != '\0') {
+            switch (*(format + 1)) {
+                case 'c':
+                    putchar(va_arg(args, int));
+                    count++;
+                    break;
+                case 's':
+                    count += printf("%s", va_arg(args, char *));
+                    break;
+                case '%':
+                    putchar('%');
+                    count++;
+                    break;
+                default:
+                    putchar('%');
+                    putchar(*(format + 1));
+                    count += 2;
+                    break;
+            }
+            format += 2; // Move to the next format specifier
+        } else {
+            putchar(*format);
+            count++;
+            format++;
+        }
+    }
 
-	ret = run_printf(format, args, output);
-
-	return (ret);
+    va_end(args);
+    return count;
 }
+
